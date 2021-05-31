@@ -23,7 +23,7 @@ fn main() {
     };
 
     let safelist = preferences::sites_with_js_enabled();
-    let visited_sites = history::sites_visited_recently();
+    let visited_sites = history::sites_visited_recently(7);
 
     println!(
         "{:?}",

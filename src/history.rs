@@ -7,7 +7,7 @@ pub struct VisitedSite {
     pub visits: u64,
 }
 
-pub fn sites_visited_recently() -> Vec<VisitedSite> {
+pub fn sites_visited_recently(days_ago: u16) -> Vec<VisitedSite> {
     let home = std::env::var("HOME").unwrap();
     let db = Connection::open_with_flags(
         home + "/Library/Application Support/Google/Chrome/Default/History",
@@ -15,7 +15,7 @@ pub fn sites_visited_recently() -> Vec<VisitedSite> {
     )
     .unwrap();
 
-    visited_sites(db)
+    visited_sites(db, days_ago)
 }
 
 static QUERY: &str = "
@@ -41,8 +41,8 @@ fn days_ago_in_nanos(days: u16) -> u64 {
     days_ago * 1000 * 1000
 }
 
-fn visited_sites(conn: Connection) -> Vec<VisitedSite> {
-    let seven_days_ago = days_ago_in_nanos(7);
+fn visited_sites(conn: Connection, days_ago: u16) -> Vec<VisitedSite> {
+    let seven_days_ago = days_ago_in_nanos(days_ago);
 
     conn.prepare(QUERY)
         .unwrap()
@@ -78,7 +78,7 @@ mod test {
         conn.execute(INSERT_VISITS, [1, days_ago_in_nanos(0)])
             .unwrap();
 
-        let visited_sites = visited_sites(conn);
+        let visited_sites = visited_sites(conn, 1);
 
         assert_eq!(
             visited_sites[0],
