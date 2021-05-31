@@ -7,7 +7,18 @@ pub struct SiteWithJavascriptEnabled {
     pub url: String,
 }
 
-pub fn sites_with_js_enabled(input: &str) -> Vec<SiteWithJavascriptEnabled> {
+pub fn sites_with_js_enabled() -> Vec<SiteWithJavascriptEnabled> {
+    let home = std::env::var("HOME").unwrap();
+
+    let preferences_json = std::fs::read_to_string(
+        home + "/Library/Application Support/Google/Chrome/Default/Preferences",
+    )
+    .unwrap();
+
+    sites_on_javascript_safelist(&preferences_json)
+}
+
+fn sites_on_javascript_safelist(input: &str) -> Vec<SiteWithJavascriptEnabled> {
     let v: Value = serde_json::from_str(input).unwrap();
 
     per_site_javascript_exceptions(&v)
@@ -49,7 +60,7 @@ fn parse_site_from_key(key: String) -> Option<SiteWithJavascriptEnabled> {
 
 #[cfg(test)]
 mod test {
-    use crate::preferences::{sites_with_js_enabled, SiteWithJavascriptEnabled};
+    use crate::preferences::{sites_on_javascript_safelist, SiteWithJavascriptEnabled};
 
     #[test]
     fn reads_js_enabled_sites() {
@@ -65,7 +76,7 @@ mod test {
             }}}}
         }"#;
 
-        let output = sites_with_js_enabled(example);
+        let output = sites_on_javascript_safelist(example);
 
         assert_eq!(output.len(), 1);
         assert_eq!(
