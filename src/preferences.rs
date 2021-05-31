@@ -2,7 +2,7 @@ use regex::Regex;
 use serde_json::value::Value::Bool;
 use serde_json::{Map, Value};
 
-#[derive(Debug, PartialEq, Eq, Hash)]
+#[derive(Debug, PartialEq, Eq, Hash, Clone)]
 pub struct SiteWithJavascriptEnabled {
     pub url: String,
 }

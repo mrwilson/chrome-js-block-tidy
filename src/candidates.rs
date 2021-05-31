@@ -9,7 +9,12 @@ pub fn sites_to_remove(
 ) -> Vec<SiteWithJavascriptEnabled> {
     history
         .into_iter()
-        .zip(safelist.into_iter())
+        .flat_map(|visited| {
+            safelist
+                .clone()
+                .into_iter()
+                .map(move |safelisted_site| (visited.clone(), safelisted_site))
+        })
         .filter_map(|(visited, safelist)| {
             if visited.url.starts_with(&safelist.url) {
                 Some((safelist, visited.visits))
@@ -69,5 +74,18 @@ mod test {
         let remove_from_safelist = sites_to_remove(safelist, visited, 11);
 
         assert!(remove_from_safelist.is_empty());
+    }
+
+    #[test]
+    fn sites_on_safelist_with_multiple_visits_above_threshold() {
+        let visited = vec![
+            visited("https://one.com/some-site", 5),
+            visited("https://one.com/some-other-site", 6),
+        ];
+        let safelist = vec![safelisted("https://one.com")];
+
+        let remove_from_safelist = sites_to_remove(safelist, visited, 10);
+
+        assert_eq!(remove_from_safelist, vec![safelisted("https://one.com")]);
     }
 }

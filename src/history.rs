@@ -1,6 +1,6 @@
 use rusqlite::{Connection, OpenFlags};
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct VisitedSite {
     pub url: String,
     pub visits: u64,
