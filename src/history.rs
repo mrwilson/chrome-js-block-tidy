@@ -31,14 +31,18 @@ group by
   1
 ";
 
-fn visited_sites(conn: Connection) -> Vec<VisitedSite> {
-    let seven_days_ago = (SystemTime::now()
+fn days_ago_in_nanos(days: u16) -> u64 {
+    let days_ago = SystemTime::now()
         .duration_since(SystemTime::UNIX_EPOCH)
         .unwrap()
         .as_secs()
-        - 7 * 24 * 60 * 60)
-        * 1000
-        * 1000;
+        - (days as u64 * 24 * 60 * 60);
+
+    days_ago * 1000 * 1000
+}
+
+fn visited_sites(conn: Connection) -> Vec<VisitedSite> {
+    let seven_days_ago = days_ago_in_nanos(7);
 
     conn.prepare(QUERY)
         .unwrap()
@@ -56,9 +60,8 @@ fn visited_sites(conn: Connection) -> Vec<VisitedSite> {
 
 #[cfg(test)]
 mod test {
-    use crate::history::{visited_sites, VisitedSite};
+    use crate::history::{days_ago_in_nanos, visited_sites, VisitedSite};
     use rusqlite::Connection;
-    use std::time::SystemTime;
 
     const CREATE_URLS: &str = "CREATE TABLE urls (id INTEGER, url TEXT)";
     const INSERT_URLS: &str = "INSERT INTO urls (id, url) VALUES (?1, ?2)";
@@ -72,19 +75,8 @@ mod test {
         conn.execute(INSERT_URLS, ["1", "https://foo.com"]).unwrap();
 
         conn.execute(CREATE_VISITS, []).unwrap();
-        conn.execute(
-            INSERT_VISITS,
-            [
-                1,
-                SystemTime::now()
-                    .duration_since(SystemTime::UNIX_EPOCH)
-                    .unwrap()
-                    .as_secs()
-                    * 1000
-                    * 1000,
-            ],
-        )
-        .unwrap();
+        conn.execute(INSERT_VISITS, [1, days_ago_in_nanos(0)])
+            .unwrap();
 
         let visited_sites = visited_sites(conn);
 
