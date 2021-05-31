@@ -1,4 +1,5 @@
 use rusqlite::{Connection, OpenFlags};
+use std::time::SystemTime;
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct VisitedSite {
@@ -25,15 +26,23 @@ from
   urls
   join visits on (visits.url = urls.id)
 where
-  visit_time >= strftime('%s', 'now')* 1000 -(7 * 24 * 60 * 60 * 1000)
+  visit_time >= ?1
 group by
   1
 ";
 
 fn visited_sites(conn: Connection) -> Vec<VisitedSite> {
+    let seven_days_ago = (SystemTime::now()
+        .duration_since(SystemTime::UNIX_EPOCH)
+        .unwrap()
+        .as_secs()
+        - 7 * 24 * 60 * 60)
+        * 1000
+        * 1000;
+
     conn.prepare(QUERY)
         .unwrap()
-        .query_map([], |row| {
+        .query_map([seven_days_ago], |row| {
             Ok(VisitedSite {
                 url: row.get(0)?,
                 visits: row.get(1)?,
