@@ -42,11 +42,11 @@ fn days_ago_in_nanos(days: u16) -> u64 {
 }
 
 fn visited_sites(conn: Connection, days_ago: u16) -> Vec<VisitedSite> {
-    let seven_days_ago = days_ago_in_nanos(days_ago);
+    let lookback = days_ago_in_nanos(days_ago);
 
     conn.prepare(QUERY)
         .unwrap()
-        .query_map([seven_days_ago], |row| {
+        .query_map([lookback], |row| {
             Ok(VisitedSite {
                 url: row.get(0)?,
                 visits: row.get(1)?,
