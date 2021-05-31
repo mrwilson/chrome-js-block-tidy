@@ -38,38 +38,33 @@ mod test {
     use crate::history::VisitedSite;
     use crate::preferences::SiteWithJavascriptEnabled;
 
+    fn visited(url: &str, visit: u64) -> VisitedSite {
+        VisitedSite {
+            url: String::from(url),
+            visits: visit,
+        }
+    }
+
+    fn safelisted(url: &str) -> SiteWithJavascriptEnabled {
+        SiteWithJavascriptEnabled {
+            url: String::from(url),
+        }
+    }
 
     #[test]
     fn sites_on_safelist_below_threshold() {
-        let visited = vec![VisitedSite {
-            url: String::from("https://one.com/some-site"),
-            visits: 10,
-        }];
-
-        let safelist = vec![SiteWithJavascriptEnabled {
-            url: String::from("https://one.com"),
-        }];
+        let visited = vec![visited("https://one.com/some-site", 10)];
+        let safelist = vec![safelisted("https://one.com")];
 
         let remove_from_safelist = sites_to_remove(safelist, visited, 10);
 
-        assert_eq!(
-            remove_from_safelist,
-            vec![SiteWithJavascriptEnabled {
-                url: String::from("https://one.com"),
-            }]
-        );
+        assert_eq!(remove_from_safelist, vec![safelisted("https://one.com")]);
     }
 
     #[test]
     fn ignore_sites_on_safelist_above_threshold() {
-        let visited = vec![VisitedSite {
-            url: String::from("https://one.com/some-site"),
-            visits: 10,
-        }];
-
-        let safelist = vec![SiteWithJavascriptEnabled {
-            url: String::from("https://one.com"),
-        }];
+        let visited = vec![visited("https://one.com/some-site", 10)];
+        let safelist = vec![safelisted("https://one.com")];
 
         let remove_from_safelist = sites_to_remove(safelist, visited, 11);
 
