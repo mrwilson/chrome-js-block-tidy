@@ -28,7 +28,7 @@ pub fn sites_to_remove(
         })
         .into_iter()
         .filter_map(|(top_level_site, visits)| {
-            if visits >= threshold {
+            if visits < threshold {
                 Some(top_level_site)
             } else {
                 None
@@ -58,34 +58,47 @@ mod test {
 
     #[test]
     fn sites_on_safelist_below_threshold() {
-        let visited = vec![visited("https://one.com/some-site", 10)];
+        let visited = vec![visited("https://one.com/some-site", 1)];
         let safelist = vec![safelisted("https://one.com")];
 
-        let remove_from_safelist = sites_to_remove(safelist, visited, 10);
+        let remove_from_safelist = sites_to_remove(safelist, visited, 2);
 
         assert_eq!(remove_from_safelist, vec![safelisted("https://one.com")]);
     }
 
     #[test]
     fn ignore_sites_on_safelist_above_threshold() {
-        let visited = vec![visited("https://one.com/some-site", 10)];
+        let visited = vec![visited("https://one.com/some-site", 2)];
         let safelist = vec![safelisted("https://one.com")];
 
-        let remove_from_safelist = sites_to_remove(safelist, visited, 11);
+        let remove_from_safelist = sites_to_remove(safelist, visited, 1);
 
         assert!(remove_from_safelist.is_empty());
     }
 
     #[test]
-    fn sites_on_safelist_with_multiple_visits_above_threshold() {
+    fn sites_on_safelist_with_multiple_visits_below_threshold() {
         let visited = vec![
-            visited("https://one.com/some-site", 5),
-            visited("https://one.com/some-other-site", 6),
+            visited("https://one.com/some-site", 1),
+            visited("https://one.com/some-other-site", 1),
         ];
         let safelist = vec![safelisted("https://one.com")];
 
-        let remove_from_safelist = sites_to_remove(safelist, visited, 10);
+        let remove_from_safelist = sites_to_remove(safelist, visited, 3);
 
         assert_eq!(remove_from_safelist, vec![safelisted("https://one.com")]);
+    }
+
+    #[test]
+    fn ignore_sites_on_safelist_with_multiple_visits_above_threshold() {
+        let visited = vec![
+            visited("https://one.com/some-site", 2),
+            visited("https://one.com/some-other-site", 2),
+        ];
+        let safelist = vec![safelisted("https://one.com")];
+
+        let remove_from_safelist = sites_to_remove(safelist, visited, 3);
+
+        assert!(remove_from_safelist.is_empty());
     }
 }
