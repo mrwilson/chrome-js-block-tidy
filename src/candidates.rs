@@ -38,6 +38,7 @@ mod test {
     use crate::history::VisitedSite;
     use crate::preferences::SiteWithJavascriptEnabled;
 
+
     #[test]
     fn sites_on_safelist_below_threshold() {
         let visited = vec![VisitedSite {
@@ -57,5 +58,21 @@ mod test {
                 url: String::from("https://one.com"),
             }]
         );
+    }
+
+    #[test]
+    fn ignore_sites_on_safelist_above_threshold() {
+        let visited = vec![VisitedSite {
+            url: String::from("https://one.com/some-site"),
+            visits: 10,
+        }];
+
+        let safelist = vec![SiteWithJavascriptEnabled {
+            url: String::from("https://one.com"),
+        }];
+
+        let remove_from_safelist = sites_to_remove(safelist, visited, 11);
+
+        assert!(remove_from_safelist.is_empty());
     }
 }
