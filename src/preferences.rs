@@ -4,18 +4,18 @@ use serde_json::value::Value::Bool;
 use serde_json::{Map, Value};
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
-pub struct SiteWithJavascriptEnabled {
+pub struct SiteWithJs {
     pub url: String,
     pub json_key: String,
 }
 
-pub fn sites_with_js_enabled() -> Vec<SiteWithJavascriptEnabled> {
+pub fn sites_with_js_enabled() -> Vec<SiteWithJs> {
     let preferences_json = std::fs::read_to_string(chrome::preferences()).unwrap();
 
     sites_on_javascript_safelist(&preferences_json)
 }
 
-fn sites_on_javascript_safelist(input: &str) -> Vec<SiteWithJavascriptEnabled> {
+fn sites_on_javascript_safelist(input: &str) -> Vec<SiteWithJs> {
     let v: Value = serde_json::from_str(input).unwrap();
 
     per_site_javascript_exceptions(&v)
@@ -44,7 +44,7 @@ fn is_on_javascript_safelist(v: &Value) -> bool {
     safelisted == 1
 }
 
-fn parse_site_from_key(json_key: String) -> Option<SiteWithJavascriptEnabled> {
+fn parse_site_from_key(json_key: String) -> Option<SiteWithJs> {
     let url = Regex::new(r"(?P<address>.*):\d+,.*")
         .ok()?
         .captures(&json_key)?
@@ -52,12 +52,12 @@ fn parse_site_from_key(json_key: String) -> Option<SiteWithJavascriptEnabled> {
         .as_str()
         .to_owned();
 
-    Some(SiteWithJavascriptEnabled { url, json_key })
+    Some(SiteWithJs { url, json_key })
 }
 
 #[cfg(test)]
 mod test {
-    use crate::preferences::{sites_on_javascript_safelist, SiteWithJavascriptEnabled};
+    use crate::preferences::{sites_on_javascript_safelist, SiteWithJs};
 
     #[test]
     fn reads_js_enabled_sites() {
@@ -78,7 +78,7 @@ mod test {
         assert_eq!(output.len(), 1);
         assert_eq!(
             output[0],
-            SiteWithJavascriptEnabled {
+            SiteWithJs {
                 url: "https://www.google.com".to_owned(),
                 json_key: "https://www.google.com:443,*".to_owned()
             }

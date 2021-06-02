@@ -1,16 +1,16 @@
 use crate::chrome;
 use crate::history::VisitedSite;
-use crate::preferences::SiteWithJavascriptEnabled;
+use crate::preferences::SiteWithJs;
 use serde_json::{Map, Value};
 use std::collections::HashMap;
 use std::fs::OpenOptions;
 use std::io::Write;
 
 pub fn sites_to_remove(
-    safelist: Vec<SiteWithJavascriptEnabled>,
+    safelist: Vec<SiteWithJs>,
     history: Vec<VisitedSite>,
     threshold: u64,
-) -> Vec<SiteWithJavascriptEnabled> {
+) -> Vec<SiteWithJs> {
     history
         .into_iter()
         .flat_map(|visited| {
@@ -41,7 +41,7 @@ pub fn sites_to_remove(
         .collect()
 }
 
-pub fn remove_sites(sites_to_remove: Vec<SiteWithJavascriptEnabled>) {
+pub fn remove_sites(sites_to_remove: Vec<SiteWithJs>) {
     let preferences_json = std::fs::read_to_string(&chrome::preferences()).unwrap();
 
     let new_json: String = remove_entries_from_json(sites_to_remove, &preferences_json);
@@ -55,10 +55,7 @@ pub fn remove_sites(sites_to_remove: Vec<SiteWithJavascriptEnabled>) {
     writer.write(new_json.as_bytes()).unwrap();
 }
 
-fn remove_entries_from_json(
-    sites_to_remove: Vec<SiteWithJavascriptEnabled>,
-    preferences_json: &String,
-) -> String {
+fn remove_entries_from_json(sites_to_remove: Vec<SiteWithJs>, preferences_json: &String) -> String {
     let mut preferences: Value = serde_json::from_str(&preferences_json).unwrap();
 
     let javascript_exceptions: &mut Map<String, Value> = exceptions(&mut preferences).unwrap();
@@ -84,7 +81,7 @@ fn exceptions(preferences: &mut Value) -> Option<&mut Map<String, Value>> {
 mod test {
     use crate::candidates::{remove_entries_from_json, sites_to_remove};
     use crate::history::VisitedSite;
-    use crate::preferences::SiteWithJavascriptEnabled;
+    use crate::preferences::SiteWithJs;
 
     fn visited(url: &str, visit: u64) -> VisitedSite {
         VisitedSite {
@@ -93,8 +90,8 @@ mod test {
         }
     }
 
-    fn safelisted(url: &str) -> SiteWithJavascriptEnabled {
-        SiteWithJavascriptEnabled {
+    fn safelisted(url: &str) -> SiteWithJs {
+        SiteWithJs {
             url: String::from(url),
             json_key: String::from("some_key"),
         }
@@ -148,7 +145,7 @@ mod test {
 
     #[test]
     fn remove_entry_from_preferences_json() {
-        let sites_to_remove = vec![SiteWithJavascriptEnabled {
+        let sites_to_remove = vec![SiteWithJs {
             url: String::from("http://google.com"),
             json_key: String::from("https://www.google.com:443,*"),
         }];
@@ -166,7 +163,8 @@ mod test {
         }"#
         .to_owned();
 
-        assert!(!remove_entries_from_json(sites_to_remove, &old_file)
-            .contains("https://www.google.com:443,*"));
+        let new_file = remove_entries_from_json(sites_to_remove, &old_file);
+
+        assert!(!new_file.contains("https://www.google.com:443,*"));
     }
 }
