@@ -26,23 +26,21 @@ from
   urls
   join visits on (visits.url = urls.id)
 where
-  visit_time >= ?1
+  datetime(visit_time/1000000-11644473600, \"unixepoch\") >= ?1
 group by
   1
 ";
 
-fn days_ago_in_nanos(days: u16) -> u64 {
-    let days_ago = SystemTime::now()
+fn days_ago_in_millis(days: u16) -> u64 {
+    SystemTime::now()
         .duration_since(SystemTime::UNIX_EPOCH)
         .unwrap()
         .as_secs()
-        - (days as u64 * 24 * 60 * 60);
-
-    days_ago * 1000 * 1000
+        - (days as u64 * 24 * 60 * 60)
 }
 
 fn visited_sites(conn: Connection, days_ago: u16) -> Vec<VisitedSite> {
-    let lookback = days_ago_in_nanos(days_ago);
+    let lookback = days_ago_in_millis(days_ago);
 
     conn.prepare(QUERY)
         .unwrap()
@@ -60,7 +58,7 @@ fn visited_sites(conn: Connection, days_ago: u16) -> Vec<VisitedSite> {
 
 #[cfg(test)]
 mod test {
-    use crate::history::{days_ago_in_nanos, visited_sites, VisitedSite};
+    use crate::history::{days_ago_in_millis, visited_sites, VisitedSite};
     use rusqlite::Connection;
 
     const CREATE_URLS: &str = "CREATE TABLE urls (id INTEGER, url TEXT)";
@@ -75,7 +73,7 @@ mod test {
         conn.execute(INSERT_URLS, ["1", "https://foo.com"]).unwrap();
 
         conn.execute(CREATE_VISITS, []).unwrap();
-        conn.execute(INSERT_VISITS, [1, days_ago_in_nanos(0)])
+        conn.execute(INSERT_VISITS, [1, days_ago_in_millis(0)])
             .unwrap();
 
         let visited_sites = visited_sites(conn, 1);
