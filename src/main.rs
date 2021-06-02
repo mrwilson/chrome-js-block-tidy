@@ -9,14 +9,14 @@ fn main() {
         .version("0.1.0")
         .about("A tool to manage exceptions when running Chrome without Javascript enabled")
         .arg(
-            Arg::with_name("threshold")
+            Arg::with_name("THRESHOLD")
                 .required(true)
-                .long("threshold")
+                .long("minimum-visits")
                 .help("Any site with fewer than this number of visits should be removed")
                 .default_value("10"),
         )
         .arg(
-            Arg::with_name("days-ago")
+            Arg::with_name("DAYS")
                 .required(true)
                 .long("days-ago")
                 .help("Only count visits to sites in this period")
@@ -24,12 +24,12 @@ fn main() {
         )
         .get_matches();
 
-    let threshold = match matches.value_of("threshold").unwrap().parse::<u64>() {
+    let threshold = match matches.value_of("THRESHOLD").unwrap().parse::<u64>() {
         Ok(n) => n,
         Err(_) => 10,
     };
 
-    let days_ago = match matches.value_of("days-ago").unwrap().parse::<u16>() {
+    let days_ago = match matches.value_of("DAYS").unwrap().parse::<u16>() {
         Ok(n) => n,
         Err(_) => 7,
     };
