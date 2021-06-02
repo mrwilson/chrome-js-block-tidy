@@ -1,3 +1,4 @@
+use crate::chrome;
 use regex::Regex;
 use serde_json::value::Value::Bool;
 use serde_json::{Map, Value};
@@ -9,12 +10,7 @@ pub struct SiteWithJavascriptEnabled {
 }
 
 pub fn sites_with_js_enabled() -> Vec<SiteWithJavascriptEnabled> {
-    let home = std::env::var("HOME").unwrap();
-
-    let preferences_json = std::fs::read_to_string(
-        home + "/Library/Application Support/Google/Chrome/Default/Preferences",
-    )
-    .unwrap();
+    let preferences_json = std::fs::read_to_string(chrome::preferences()).unwrap();
 
     sites_on_javascript_safelist(&preferences_json)
 }

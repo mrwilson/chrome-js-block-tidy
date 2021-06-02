@@ -1,3 +1,4 @@
+use crate::chrome;
 use crate::history::VisitedSite;
 use crate::preferences::SiteWithJavascriptEnabled;
 use serde_json::{Map, Value};
@@ -41,14 +42,15 @@ pub fn sites_to_remove(
 }
 
 pub fn remove_sites(sites_to_remove: Vec<SiteWithJavascriptEnabled>) {
-    let home = std::env::var("HOME").unwrap();
-
-    let path = home + "/Library/Application Support/Google/Chrome/Default/Preferences";
-    let preferences_json = std::fs::read_to_string(&path).unwrap();
+    let preferences_json = std::fs::read_to_string(&chrome::preferences()).unwrap();
 
     let new_json: String = remove_entries_from_json(sites_to_remove, &preferences_json);
 
-    let mut writer = OpenOptions::new().write(true).open(&path).unwrap();
+    let mut writer = OpenOptions::new()
+        .write(true)
+        .open(&chrome::preferences())
+        .unwrap();
+
     writer.set_len(0).unwrap();
     writer.write(new_json.as_bytes()).unwrap();
 }

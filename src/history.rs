@@ -1,3 +1,4 @@
+use crate::chrome;
 use rusqlite::{Connection, OpenFlags};
 use std::time::SystemTime;
 
@@ -8,12 +9,8 @@ pub struct VisitedSite {
 }
 
 pub fn sites_visited_recently(days_ago: u16) -> Vec<VisitedSite> {
-    let home = std::env::var("HOME").unwrap();
-    let db = Connection::open_with_flags(
-        home + "/Library/Application Support/Google/Chrome/Default/History",
-        OpenFlags::SQLITE_OPEN_READ_ONLY,
-    )
-    .unwrap();
+    let db =
+        Connection::open_with_flags(chrome::history(), OpenFlags::SQLITE_OPEN_READ_ONLY).unwrap();
 
     visited_sites(db, days_ago)
 }

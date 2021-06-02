@@ -1,6 +1,7 @@
 use clap::{App, Arg};
 
 mod candidates;
+mod chrome;
 mod history;
 mod preferences;
 
