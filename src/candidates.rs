@@ -53,6 +53,7 @@ mod test {
     fn safelisted(url: &str) -> SiteWithJavascriptEnabled {
         SiteWithJavascriptEnabled {
             url: String::from(url),
+            json_key: String::from("some_key"),
         }
     }
 

@@ -5,6 +5,7 @@ use serde_json::{Map, Value};
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
 pub struct SiteWithJavascriptEnabled {
     pub url: String,
+    pub json_key: String,
 }
 
 pub fn sites_with_js_enabled() -> Vec<SiteWithJavascriptEnabled> {
@@ -47,15 +48,15 @@ fn is_on_javascript_safelist(v: &Value) -> bool {
     safelisted == 1
 }
 
-fn parse_site_from_key(key: String) -> Option<SiteWithJavascriptEnabled> {
+fn parse_site_from_key(json_key: String) -> Option<SiteWithJavascriptEnabled> {
     let url = Regex::new(r"(?P<address>.*):\d+,.*")
         .ok()?
-        .captures(&key)?
+        .captures(&json_key)?
         .name("address")?
         .as_str()
         .to_owned();
 
-    Some(SiteWithJavascriptEnabled { url })
+    Some(SiteWithJavascriptEnabled { url, json_key })
 }
 
 #[cfg(test)]
@@ -82,7 +83,8 @@ mod test {
         assert_eq!(
             output[0],
             SiteWithJavascriptEnabled {
-                url: "https://www.google.com".to_owned()
+                url: "https://www.google.com".to_owned(),
+                json_key: "https://www.google.com:443,*".to_owned()
             }
         )
     }
