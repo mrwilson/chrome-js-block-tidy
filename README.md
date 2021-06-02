@@ -2,17 +2,15 @@
 
 A tool to manage exceptions when running Chrome without Javascript enabled.
 
-It calculates which URLs on the JavaScript safelist haven't been visited much recently and could possibly be removed. For example:
+It removes urls from the Chrome Javascript safelist which haven't been visited much recently. For example:
 
 ```bash
-$ chrome-js-block-tidy --threshold 20 --days-ago 365
+$ chrome-js-block-tidy --minimum-visits 20 --days-ago 365
 
-https://stackoverflow.com
-https://google.com
-https://blog.probablyfine.co.uk
+Removing https://stackoverflow.com
+Removing https://google.com
+Removing https://blog.probablyfine.co.uk
 ```
-
-TODO: Automate editing the Chrome Preferences JSON to automatically remove them.
 
 ## Usage
 
