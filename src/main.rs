@@ -37,7 +37,9 @@ fn main() {
     let safelist = preferences::sites_with_js_enabled();
     let visited_sites = history::sites_visited_recently(days_ago);
 
-    for site in candidates::sites_to_remove(safelist, visited_sites, threshold) {
-        println!("{0}", site.url);
-    }
+    candidates::remove_sites(candidates::sites_to_remove(
+        safelist,
+        visited_sites,
+        threshold,
+    ));
 }
