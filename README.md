@@ -21,9 +21,10 @@ chrome-js-block-tidy 0.1.0
 A tool to manage exceptions when running Chrome without Javascript enabled
 
 USAGE:
-    chrome-js-block-tidy --days-ago <DAYS> --minimum-visits <THRESHOLD>
+    chrome-js-block-tidy [FLAGS] --days-ago <DAYS> --minimum-visits <THRESHOLD>
 
 FLAGS:
+        --dry-run    Prints the list of sites that would be removed
     -h, --help       Prints help information
     -V, --version    Prints version information
 

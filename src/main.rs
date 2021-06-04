@@ -23,6 +23,13 @@ fn main() {
                 .help("Only count visits to sites in this period")
                 .default_value("7"),
         )
+        .arg(
+            Arg::with_name("DRYRUN")
+                .long("dry-run")
+                .required(false)
+                .takes_value(false)
+                .help("Prints the list of sites that would be removed"),
+        )
         .get_matches();
 
     let threshold = match matches.value_of("THRESHOLD").unwrap().parse::<u64>() {
@@ -38,9 +45,14 @@ fn main() {
     let safelist = preferences::sites_with_js_enabled();
     let visited_sites = history::sites_visited_recently(days_ago);
 
-    candidates::remove_sites(candidates::sites_to_remove(
-        safelist,
-        visited_sites,
-        threshold,
-    ));
+    let candidate_sites = candidates::sites_to_remove(safelist, visited_sites, threshold);
+
+    if matches.is_present("DRYRUN") {
+        println!("Sites that would be removed:");
+        for site in candidate_sites {
+            println!("{0}", site.url);
+        }
+    } else {
+        candidates::remove_sites(candidate_sites);
+    }
 }
